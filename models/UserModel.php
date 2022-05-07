@@ -52,39 +52,124 @@ class UserModel extends Model implements IModel {
                 $item -> setBudget($p['budget']);
                 $item -> setPhoto($p['photo']);
                 $item -> setName($p['name']);
+
+                array_push($items, $item);
             }
-        } catch(PDOException $e) {
+
+            return $items;
+        } catch (PDOException $e) {
             error_log('USERMODEL::getAll -> PDOException '. $e);
             return false;
         }
     }
 
     public function get($id) {
-        // TODO: Implement get() method.
+        try {
+            $query = $this->prepare('SELECT * FROM users WHERE id = :id');
+            $query -> execute([ 'id' => $id]);
+            $user = $query -> fetch(PDO::FETCH_ASSOC);
+
+            $this -> id = $user['id'];
+            $this -> username = $user['username'];
+            $this -> password = $user['password'];
+            $this -> role = $user['role'];
+            $this -> budget = $user['budget'];
+            $this -> photo = $user['photo'];
+            $this -> name = $user['name'];
+
+            return $this;
+        } catch (PDOException $e) {
+            error_log('USERMODEL::get -> PDOException '. $e);
+            return false;
+        }
     }
 
     public function delete($id) {
-        // TODO: Implement delete() method.
+        try {
+            $query = $this -> prepare('DELETE FROM users WHERE id = :id');
+            $query -> execute([ 'id' => $id]);
+            return true;
+        } catch (PDOException $e) {
+            error_log('USERMODEL::delete -> PDOException '. $e);
+            return false;
+        }
     }
 
     public function update() {
-        // TODO: Implement update() method.
+        try {
+            $query = $this -> prepare('UPDATE users SET username = :username, password = :password, budget = :budget, photo = :photo, name = :name WHERE id = :id');
+            $query -> execute([
+                'id'       => $this -> id,
+                'username' => $this -> username,
+                'password' => $this -> password,
+                'budget'   => $this -> budget,
+                'photo'    => $this -> photo,
+                'name'     => $this -> name
+            ]);
+            return true;
+        } catch (PDOException $e){
+            error_log('USERMODEL::update -> PDOException '. $e);;
+            return false;
+        }
+    }
+
+    public function exists($username){
+        try {
+            $query = $this -> prepare('SELECT username FROM users WHERE username = :username');
+            $query -> execute( ['username' => $username]);
+
+            if ($query -> rowCount() > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch(PDOException $e){
+            error_log('USERMODEL::exists -> PDOException '. $e);
+            return false;
+        }
+    }
+
+    function comparePasswords($current, $userid) {
+        try {
+            $query = $this -> db->connect() -> prepare('SELECT id, password FROM USERS WHERE id = :id');
+            $query -> execute(['id' => $userid]);
+
+            if($row = $query -> fetch(PDO::FETCH_ASSOC)) return password_verify($current, $row['password']);
+            return NULL;
+        } catch (PDOException $e) {
+            error_log('USERMODEL::comparePasswords -> PDOException '. $e);
+            return NULL;
+        }
     }
 
     public function from($array) {
-        // TODO: Implement from() method.
+        $this -> id = $array['id'];
+        $this -> username = $array['username'];
+        $this -> password = $array['password'];
+        $this -> role = $array['role'];
+        $this -> budget = $array['budget'];
+        $this -> photo = $array['photo'];
+        $this -> name = $array['name'];
     }
 
-    public function setId($id)         { $this -> id = $id; }
-    public function setRole($role)     { $this -> role = $role; }
-    public function setBudget($budget) { $this -> budget = $budget; }
-    public function setPhoto($photo)   { $this -> photo = $photo; }
-    public function setName($name)     { $this -> name = $name; }
+    public function setId($id)             { $this -> id = $id; }
+    public function setRole($role)         { $this -> role = $role; }
+    public function setBudget($budget)     { $this -> budget = $budget; }
+    public function setPhoto($photo)       { $this -> photo = $photo; }
+    public function setName($name)         { $this -> name = $name; }
+    public function setUsername($username) { $this -> username = $username; }
+    public function setPassword($password, $hash = true) {
+        $this -> password = $this -> getHashedPassword($password);
+    }
 
     public function getId()            { return $this -> id; }
+    public function getUsername()      { return $this -> username; }
     public function getPassword()      { return $this -> password; }
     public function getRole()          { return $this -> role; }
     public function getBudget()        { return $this -> budget; }
     public function getPhoto()         { return $this -> photo; }
     public function getName()          { return $this -> name;}
+    private function getHashedPassword($password){
+        return password_hash($password, PASSWORD_DEFAULT, ['cost' => 10]);
+    }
 }
