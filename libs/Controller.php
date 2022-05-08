@@ -49,14 +49,17 @@ class Controller {
         $params = '';
 
         foreach ($mensajes as $key => $mensaje) {
-            array_push($data, $key . ' = ' . $mensaje);
+            array_push($data, $key . '=' . $mensaje);
         }
         $params = join('&', $data);
 
         if($params != '') {
-            $params = '?' . $params;
+            $params = '?' .$params;
         }
 
-        header('Location: ' . constant('URL') . $route . $params);
+        error_log('CONTROLEER::redirect -> $route: ' .  $route);
+        error_log('CONTROLEER::redirect -> $params: ' .  $params);
+
+        header('Location: ' . constant('URL') . '/' .$route .$params);
     }
 }

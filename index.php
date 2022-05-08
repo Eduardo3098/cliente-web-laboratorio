@@ -12,6 +12,7 @@
     error_log('Inicio de aplicacion web');
 
     require_once 'libs/Database.php';
+    require_once 'libs/messages.php';
     require_once 'classes/ErrorMessages.php';
     require_once 'classes/SuccessMessages.php';
     require_once 'libs/Controller.php';

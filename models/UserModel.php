@@ -120,9 +120,8 @@ class UserModel extends Model implements IModel {
 
             if ($query -> rowCount() > 0) {
                 return true;
-            } else {
-                return false;
             }
+            return false;
         } catch(PDOException $e){
             error_log('USERMODEL::exists -> PDOException '. $e);
             return false;
@@ -131,7 +130,7 @@ class UserModel extends Model implements IModel {
 
     function comparePasswords($current, $userid) {
         try {
-            $query = $this -> db->connect() -> prepare('SELECT id, password FROM USERS WHERE id = :id');
+            $query = $this -> prepare('SELECT id, password FROM USERS WHERE id = :id');
             $query -> execute(['id' => $userid]);
 
             if($row = $query -> fetch(PDO::FETCH_ASSOC)) return password_verify($current, $row['password']);

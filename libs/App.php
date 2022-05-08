@@ -23,36 +23,36 @@ class App {
         if(file_exists($archivoController)) {
             require_once $archivoController;
 
+            // inicializar controlador
             $controller = new $url[0];
             $controller -> loadModel($url[0]);
 
+            // si hay un método que se requiere cargar
             if(isset($url[1])) {
                 if(method_exists($controller, $url[1])) {
                     if(isset($url[2])) {
-                        $nparam = count($url) - 2; // parametros del controlador
-                        $params = []; // parametros
-
-                        for ($i = 0; $i < $nparam; $i++) {
-                            array_push($params, $url[$i] + 2);
+                        //el método tiene parámetros
+                        //sacamos e # de parametros
+                        $nparam = sizeof($url) - 2;
+                        //crear un arreglo con los parametros
+                        $params = [];
+                        //iterar
+                        for($i = 0; $i < $nparam; $i++) {
+                            array_push($params, $url[$i + 2]);
                         }
+                        //pasarlos al metodo
                         $controller -> {$url[1]}($params);
-                    } else {
-                        // no tiene parametros, se manda a llamar el metodo
+                    }else{
                         $controller -> {$url[1]}();
                     }
-                } else {
-                    // error, no existe el metodo
-                    $controller = new Errores();
+                }else{
                     $controller -> render();
                 }
-            } else {
-                // no hay metodo a cargar, metodo por default
+            }else{
                 $controller -> render();
             }
-        } else {
-            // error, no existe el archivo
+        }else{
             $controller = new Errores();
-            $controller -> render();
         }
     }
 }
